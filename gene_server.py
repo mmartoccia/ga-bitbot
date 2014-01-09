@@ -49,10 +49,12 @@ from copy import deepcopy
 import threading
 from Queue import Queue
 import gc
+from datetime import datetime
 
 import paths
 import call_metrics
 
+mattsvar = 'originalval'
 quit = 0
 MAX_PID_MESSAGE_BUFFER_SIZE = 255
 AUTO_BACKUP_AFTER_N_SAVES = 60
@@ -81,6 +83,9 @@ def echo(msg):
 @call_metrics.call_metrics
 def put_signed_package(package):
     global g_signed_package_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_signed_package start " + str(datetime.now()) + "\n")
+
     try:
         package = json.loads(package)
     except:
@@ -92,6 +97,9 @@ def put_signed_package(package):
 @call_metrics.call_metrics
 def get_signed_package(package_name):
     global g_signed_package_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_signed_package start " + str(datetime.now()) + "\n")
+
     if g_signed_package_library.has_key(package_name):
         return json.dumps(g_signed_package_library[package_name])
     return "NOK"
@@ -104,6 +112,9 @@ def check_signed_package(package_name,MD5):
     are in synch with the signed package library
     """
     global g_signed_package_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("check_signed_package start " + str(datetime.now()) + "\n")
+
     if g_signed_package_library.has_key(package_name):
         if g_signed_package_library[package_name]['MD5'] == MD5:
             return "OK"
@@ -118,6 +129,9 @@ def trade_enable(state,gdh):
     state = 1, enable trading
     """
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("trade_enable start " + str(datetime.now()) + "\n")
+
     try:
         state = int(state)
     except:
@@ -139,6 +153,9 @@ def trade_priority(priority,gdh):
     priority = 9, lowest priority
     """
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("trade_priority start " + str(datetime.now()) + "\n")
+
     try:
         priority = int(priority)
     except:
@@ -154,6 +171,9 @@ def trade_priority(priority,gdh):
 def put_target(target,pid=None):
     global g_trgt
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_target start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     g_gene_library[gdh]['g_trgt'] = target
     return "OK"
@@ -162,6 +182,9 @@ def put_target(target,pid=None):
 def get_target(pid=None):
     global g_trgt
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_target start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     return g_gene_library[gdh]['g_trgt']
 
@@ -169,6 +192,9 @@ def get_target(pid=None):
 def put_active_quartile(quartile,pid=None):
     global g_active_quartile
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_active_quartile start " + str(datetime.now()) + "\n")
+
     g_active_quartile = quartile
     gdh = get_pid_gene_def_hash(pid)
     g_gene_library[gdh]['g_active_quartile'] = quartile
@@ -180,6 +206,9 @@ def put_active_quartile(quartile,pid=None):
 def get_active_quartile(pid=None):
     global g_active_quartile
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_active_quartile start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     #return g_gene_library[gdh]['g_active_quartile']
     return g_active_quartile
@@ -189,8 +218,10 @@ def get_gene(n_sec,quartile,pid = None):
     global g_d
     global g_bobs
     global g_gene_library
-    gdh = get_pid_gene_def_hash(pid)
 
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_gene start " + str(datetime.now()) + "\n")
+
+    gdh = get_pid_gene_def_hash(pid)
     t = time.time() - n_sec
     #get the highest score calculated within the last n seconds
     #or return the latest if none are found.
@@ -222,6 +253,9 @@ def get_gene(n_sec,quartile,pid = None):
 def get_all_genes(quartile,pid = None):
     global g_d
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_all_genes start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     return json.dumps(sorted(g_gene_library[gdh]['gene_high_scores'][quartile - 1], key=itemgetter('score')))
     #return json.dumps(sorted(g_d[quartile - 1], key=itemgetter('score')))
@@ -230,6 +264,9 @@ def get_all_genes(quartile,pid = None):
 def get_bobs(quartile,pid = None):
     global g_bobs
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_bobs start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     return json.dumps(sorted(g_gene_library[gdh]['gene_best'][quartile - 1], key=itemgetter('score')))
     #return json.dumps(sorted(g_bobs[quartile - 1], key=itemgetter('score')))
@@ -239,6 +276,9 @@ def put_gene(d,quartile,pid = None):
     global g_d
     global g_bobs
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_gene start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     #dictionary must have two key values, time & score
     #add the record and sort the dictionary list
@@ -275,6 +315,9 @@ def put_gene(d,quartile,pid = None):
 
 @call_metrics.call_metrics
 def put_gene_buffered(d_buffer,quartile,pid = None):
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_gene_buffered start " + str(datetime.now()) + "\n")
+
     for d in d_buffer:
         put_gene(d,quartile,pid)
     return "OK"
@@ -283,6 +326,9 @@ def put_gene_buffered(d_buffer,quartile,pid = None):
 def put_bob(d,quartile,pid = None):
     global g_bobs
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("put_bob start " + str(datetime.now()) + "\n")
+
     gdh = get_pid_gene_def_hash(pid)
     #dictionary must have two key values, time & score
     #add the record and sort the dictionary list
@@ -315,6 +361,9 @@ def pid_register_gene_def(pid,gene_def):
     global g_pids
     global g_gene_library
     global g_gene_conf
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_register_gene_def start " + str(datetime.now()) + "\n")
+
     #calc the hash of gene_def
     conf_hash = hashlib.md5(gene_def).hexdigest()
     if conf_hash in g_gene_library.keys():
@@ -335,6 +384,9 @@ def pid_register_client(pid,gene_def_hash):
     global g_gene_library
     global g_default_group_gene_def_hash
     global g_default_group_set
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_register_client start" + str(datetime.now()) + "\n")
+
     print pid,gene_def_hash
 
     if gene_def_hash in g_gene_library.keys():
@@ -353,6 +405,9 @@ def pid_alive(pid):
     global g_undefined_gene_def_hash
     global g_default_group_gene_def_hash
     global g_default_group_set
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_alive start " + str(datetime.now()) + "\n")
+
     #pid ping (watchdog reset)
     if pid in g_pids.keys(): #existing pid
         g_pids[pid]['watchdog_reset'] = time.time()
@@ -367,6 +422,9 @@ def pid_alive(pid):
 @call_metrics.call_metrics
 def pid_check(pid,time_out):
     global g_pids
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_check start " + str(datetime.now()) + "\n")
+
     #check for PID watchdog timeout (seconds)
     if pid in g_pids.keys():
         dt = time.time() - g_pids[pid]['watchdog_reset']
@@ -380,6 +438,9 @@ def pid_check(pid,time_out):
 @call_metrics.call_metrics
 def pid_remove(pid):
     global g_pids
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_remove start " + str(datetime.now()) + "\n")
+
     try:
         g_pids.pop(pid)
     except:
@@ -389,19 +450,27 @@ def pid_remove(pid):
 @call_metrics.call_metrics
 def pid_msg(pid,msg):
     global g_pids
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_msg start pid:" + str(pid) + " msg:" + str(msg) + " " + str(datetime.now()) + "\n")
+
     #append a message to the PID buffer
     if pid in g_pids.keys(): #existing pid
         g_pids[pid]['msg_buffer'].insert(0,msg)
         #limit the message buffer size
         if len(g_pids[pid]['msg_buffer']) > MAX_PID_MESSAGE_BUFFER_SIZE:
             g_pids[pid]['msg_buffer'] = g_pids[pid]['msg_buffer'][:-1]
+        with open("xmlrpc.log", "a") as logfile: logfile.write("pid_msg end OK " + str(datetime.now()) + "\n")
         return "OK"
     else:
+        with open("xmlrpc.log", "a") as logfile: logfile.write("pid_msg end NOK " + str(datetime.now()) + "\n")
         return "NOK"
 
 @call_metrics.call_metrics
 def pid_list(ping_seconds=9999999):
     global g_pids
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("pid_list start " + str(datetime.now()) + "\n")
+
     pids = []
     for pid in g_pids.keys():
         if pid_check(pid,ping_seconds) == "OK":
@@ -411,6 +480,9 @@ def pid_list(ping_seconds=9999999):
 @call_metrics.call_metrics
 def get_pids():
     global g_pids
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_pids start " + str(datetime.now()) + "\n")
+
     js_pids = json.dumps(g_pids)
     #clear the message buffers
     #for pid in g_pids.keys():
@@ -421,6 +493,9 @@ def get_pids():
 def get_pid_gene_def_hash(pid):
     global g_pids
     global g_undefined_gene_def_hash
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_pid_gene_def_hash start " + str(datetime.now()) + "\n")
+
     if pid == None:
         return g_undefined_gene_def_hash
     elif pid in g_pids.keys():
@@ -431,16 +506,25 @@ def get_pid_gene_def_hash(pid):
 @call_metrics.call_metrics
 def get_default_gene_def_hash():
     global g_default_group_gene_def_hash
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_default_gene_def_hash start " + str(datetime.now()) + "\n")
+
     return json.dumps(g_default_group_gene_def_hash)
 
 @call_metrics.call_metrics
 def get_gene_def_hash_list():
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_gene_def_hash_list start " + str(datetime.now()) + "\n")
+
     return json.dumps(g_gene_library.keys())
 
 @call_metrics.call_metrics
 def get_gene_def(gene_def_hash):
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_gene_def start " + str(datetime.now()) + "\n")
+
     if gene_def_hash in g_gene_library.keys():
         return g_gene_library[gene_def_hash]['gene_def']
     return json.dumps('NOK:NOT_FOUND')
@@ -448,6 +532,9 @@ def get_gene_def(gene_def_hash):
 @call_metrics.call_metrics
 def set_default_gene_def_hash(gd_hash):
     global g_default_group_gene_def_hash
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("set_default_gene_def_hash start " + str(datetime.now()) + "\n")
+
     if get_gene_def(gd_hash).find('NOK:') < 0:
         g_default_group_set = True
         g_default_group_gene_def_hash = gd_hash
@@ -456,18 +543,28 @@ def set_default_gene_def_hash(gd_hash):
 #system services
 def shutdown():
     global quit
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("shutdown start " + str(datetime.now()) + "\n")
+
     quit = 1
     save_db()
+    with open("xmlrpc.log", "a") as logfile: logfile.write("shutdown end " + str(datetime.now()) + "\n")
     return 1
 
 @call_metrics.call_metrics
 def get_db():
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_db start " + str(datetime.now()) + "\n")
+
     return json.dumps(g_gene_library)
 
 @call_metrics.call_metrics
 def get_db_stripped():
     global g_gene_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_db_stripped start " + str(datetime.now()) + "\n")
+
     #sdb = deepcopy(g_gene_library)
     #for key in sdb:
     #   sdb[key].pop('gene_def')
@@ -490,6 +587,10 @@ def save_db():
     global g_save_counter
     global g_gene_library
     global g_signed_package_library
+    global mattsvar
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db start " + str(datetime.now()) + "\n")
+
 
     g_save_counter += 1
     if g_save_counter == AUTO_BACKUP_AFTER_N_SAVES:
@@ -498,26 +599,78 @@ def save_db():
     else:
         backup = False
 
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db g_gene_library.update " + str(datetime.now()) + "\n")
+
     #embed the signed package library into the gene library
     g_gene_library.update({'signed_package_library':g_signed_package_library})
 
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db g_gene_library.update complete " + str(datetime.now()) + "\n")
+
     if backup:
+        with open("xmlrpc.log", "a") as logfile: logfile.write("save_db backup " + str(datetime.now()) + "\n")
         f = open('./config/gene_server_db_library.json.bak','w')
         f.write(json.dumps(g_gene_library))
         f.close()
+        with open("xmlrpc.log", "a") as logfile: logfile.write("save_db backup complete " + str(datetime.now()) + "\n")
 
-    f = open('./config/gene_server_db_library.json','w')
-    f.write(json.dumps(g_gene_library))
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db saving gene library... " + str(datetime.now()) + "\n")
+    
+    try: 
+        f = open('./config/gene_server_db_library.json','w')
+    except Exception as inst:
+        with open("xmlrpc.log", "a") as logfile: logfile.write("COULDN'T OPEN FILE! " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("type: " + str(type(inst)) + " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("args: " + str(inst.args) +  " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("inst: " + str(inst) +  " " + str(datetime.now()) + "\n")
+
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("(opened gene_server_db_library.json) " + str(datetime.now()) + "\n")
+
+    try:
+        mattsvar = json.dumps(g_gene_library)
+    except Exception as inst:
+        with open("xmlrpc.log", "a") as logfile: logfile.write("COULDN'T JSON.DUMPS! " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("type: " + str(type(inst)) + " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("args: " + str(inst.args) +  " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("inst: " + str(inst) +  " " + str(datetime.now()) + "\n")
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("(writing to file) " + str(datetime.now()) + "\n")
+
+    try:
+        f.write(mattsvar)
+    except Exception as inst:
+        with open("xmlrpc.log", "a") as logfile: logfile.write("COULDN'T WRITE FILE! " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("type: " + str(type(inst)) + " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("args: " + str(inst.args) +  " " + str(datetime.now()) + "\n")
+        with open("xmlrpc.log", "a") as logfile: logfile.write("inst: " + str(inst) +  " " + str(datetime.now()) + "\n")
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db saving gene library... complete " + str(datetime.now()) + "\n")
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db g.gene_library.pop " + str(datetime.now()) + "\n")
+
     #pop the signed package library back out of the gene library
     g_gene_library.pop('signed_package_library')
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db g.gene_library.pop complete " + str(datetime.now()) + "\n")
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db garbarge collect " + str(datetime.now()) + "\n")
+
     #call the python garbage collector - improve long running process memory useage when using pypy
     gc.collect()
+    
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db garbarge collect... complete " + str(datetime.now()) + "\n")
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("save_db end OK " + str(datetime.now()) + "\n")
+
     return 'OK'
 
 @call_metrics.call_metrics
 def reload_db():
     global g_gene_library
     global g_signed_package_library
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("reload_db start " + str(datetime.now()) + "\n")
+
     import os
     reload_error = False
     #save the gene db before shut down
@@ -597,6 +750,9 @@ def reload_db():
 
 
 def get_gene_server_metrics():
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("get_gene_server_metrics start " + str(datetime.now()) + "\n")
+
     return json.dumps(call_metrics.get_metrics())
 
 #set the service url
@@ -612,6 +768,9 @@ if gene_server_config.__type__ == "single_threaded":
 elif gene_server_config.__type__ == "thread_pool":
     class ThreadPoolMixIn(SocketServer.ThreadingMixIn):
         def __init__(self):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("ThreadPoolMixIn__init__ start " + str(datetime.now()) + "\n")
+
             self.num_threads = gene_server_config.__poolsize__
             self.allow_reuse_address = True  #fix socket.error on server restart
             self.lock = threading.Lock()
@@ -623,11 +782,17 @@ elif gene_server_config.__type__ == "thread_pool":
                 t.start()
 
         def serve_forever(self):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("serve_forever start " + str(datetime.now()) + "\n")
+
             while True:
                 self.handle_request()
             self.server_close()
 
         def process_request_thread(self):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("process_request_thread start " + str(datetime.now()) + "\n")
+
             while True:
                 got = self.requests.get()
                 self.lock.acquire()
@@ -635,6 +800,9 @@ elif gene_server_config.__type__ == "thread_pool":
                 self.lock.release()
         
         def handle_request(self):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("handle_request start " + str(datetime.now()) + "\n")
+
             try:
                 request, client_address = self.get_request()
             except socket.error:
@@ -644,6 +812,9 @@ elif gene_server_config.__type__ == "thread_pool":
 
     class AsyncXMLRPCServer(ThreadPoolMixIn,SimpleXMLRPCServer):
         def __init__(self, *args, **kwargs):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("AsyncXMLRPCServer__init__ start " + str(datetime.now()) + "\n")
+
             SimpleXMLRPCServer.__init__(self, *args, **kwargs)
             ThreadPoolMixIn.__init__(self)
 
@@ -654,11 +825,17 @@ elif gene_server_config.__type__ == "threaded":
     # Threaded mix-in
     class AsyncXMLRPCServer(SocketServer.ThreadingMixIn,SimpleXMLRPCServer):
         def __init__(self, *args, **kwargs):
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("AsyncXMLRPCServer__init__ start" + str(datetime.now()) + "\n")
+
             SimpleXMLRPCServer.__init__(self, *args, **kwargs)
             self.lock = threading.Lock()
 
         def process_request_thread(self, request, client_address):
             # Blatant copy of SocketServer.ThreadingMixIn, but we need a single threaded handling of the request
+
+            with open("xmlrpc.log", "a") as logfile: logfile.write("process_request_thread start " + str(datetime.now()) + "\n")
+
             self.lock.acquire()
             try:
                 self.finish_request(request, client_address)
@@ -727,6 +904,9 @@ server.register_function(put_gene,'mc_put')
 server.register_introspection_functions()
 
 if __name__ == "__main__":
+
+    with open("xmlrpc.log", "a") as logfile: logfile.write("gene_server: running "+ gene_server_config.__type__ +" server on port " + str(__port__) + " " + str(datetime.now()) + "\n")
+
     print "gene_server: running "+ gene_server_config.__type__ +" server on port " + str(__port__)
     reload_db()
     while not quit:

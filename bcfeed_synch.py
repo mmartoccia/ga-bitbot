@@ -19,7 +19,7 @@ Without the -d switch the output will only be written to the datafeed_reboot fol
 """%(__app_version__)
 print "-"*80
 
-link = """http://bitcoincharts.com/t/trades.csv?symbol=mtgoxUSD&start={START_TIME}"""
+link = """http://api.bitcoincharts.com/v1/trades.csv?symbol=mtgoxUSD&start={START_TIME}"""
 start_time = 0      #don't change these variables - they are automaticaly configured
 incremental_update = 0  #based on command line options
 auto_move_output = 0    #

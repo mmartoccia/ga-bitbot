@@ -32,7 +32,7 @@ app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 var http = require('http');
 var https = require('https');
 var xmlrpc = require('xmlrpc');
-var rpcClient = xmlrpc.createClient({ host: '127.0.0.1', port: 9854, path: '/gene'});
+var rpcClient = xmlrpc.createClient({ host: '10.60.233.88', port: 9854, path: '/gene'});
 
 var ch_depth = '24e67e0d-1cad-4cc0-9e7a-f8523ef460fe';
 var ch_trades = 'dbf1dee9-4f2e-4a08-8cb7-748919a71b21';
@@ -182,7 +182,7 @@ gabb.on('connection', function (socket) {
 	socket.on('request_gene_db_stripped', function () {
 		try{
 			rpcClient.methodCall('get_db_stripped', [], function (error, value) {
-					//console.log('sending request_gene_db_stripped response');
+					console.log('sending request_gene_db_stripped response');
 					try{socket.emit('message', {'channel':'gene_db_stripped','value':JSON.parse(value)});}catch(err){console.log('get_db_stripped emit error');};
 				});
 		}catch(err){
@@ -196,8 +196,8 @@ gabb.on('connection', function (socket) {
 			rpcClient.methodCall('get_gene_server_metrics', [], function (error, value) {
 					value = JSON.parse(value);
 					value.server_latency = endRPC();
-					//console.log('gene server response time: ' + value.latency);
-					//console.log('sending get_gene_server_metrics response' + value);
+					console.log('gene server response time: ' + value.latency);
+					console.log('sending get_gene_server_metrics response' + value);
 					socket.emit('message', {'channel':'gene_server_metrics','value':value});
 			});
 		}catch(err){
@@ -231,7 +231,8 @@ gabb.on('connection', function (socket) {
 // create client socket.io connection to MtGox
 //
 var ioc = require('socket.io-client');
-var serverUrl = 'https://socketio.mtgox.com:443/mtgox';
+var serverUrl = 'http://socketio.mtgox.com/mtgox';
+//var serverUrl = 'https://websocket.mtgox.com:443/mtgox';
 var conn = ioc.connect(serverUrl);
 
 conn.on('connect',    onConnect);
@@ -326,9 +327,11 @@ function xmlrpcBroadcastBridge()
 	var pid = "NODEJS";
 	var gene_def_hash = "";
 	// Sends a method call to the XML-RPC server
+        console.log('test before rpcClient')
 	rpcClient.methodCall('get_default_gene_def_hash', [], function (error, value) {	
-	    gene_def_hash = value.replace(/"/g,""); 
-	    //console.log('get default gene hash response: ' + value);
+	console.log('get default gene hash before response: ' + error)    
+           gene_def_hash = value.replace(/"/g,""); 
+	    console.log('get default gene hash response: ' + value);
 		rpcClient.methodCall('pid_register_client', [pid, gene_def_hash], function (error, value) {
 			//client is registered - now pull the data
 			rpcClient.methodCall('get_target', [pid], function (error, value) {

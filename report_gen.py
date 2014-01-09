@@ -318,9 +318,9 @@ while 1:
         print "sleeping..."
         print "_" * 80
         print "\n"
-        time.sleep(600) #generate a report every n seconds
+        time.sleep(300) #generate a report every n seconds
     else:
-        time.sleep(600)
+        time.sleep(300)
         print "skipping sleep state due to active trigger prices..."
         print "_" * 80
         print "\n"

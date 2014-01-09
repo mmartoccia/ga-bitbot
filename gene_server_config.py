@@ -2,7 +2,7 @@
 global __server__
 global __port__
 
-__server__ = "0.0.0.0"
+__server__ = "10.60.233.88"
 __port__ = 9854
 
 
